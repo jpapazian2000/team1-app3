@@ -42,34 +42,34 @@ jobs:
           echo "::set-output name=token::$ID_TOKEN"
           echo "JWT_TOKEN=$ID_TOKEN" >> $GITHUB_ENV
 
-      - name: Decode JWT Token
+      - name: Customize JWT Token
         run: |
-          echo "import jwt" > decode_jwt.py
-          echo "import os" >> decode_jwt.py
-          echo "def decode_jwt_token(token):" >> decode_jwt.py
-          echo "    try:" >> decode_jwt.py
-          echo "        print(f'Token: {token}')" >> decode_jwt.py
-          echo "        segments = token.split('.')" >> decode_jwt.py
-          echo "        print(f'Token Segments: {segments}')" >> decode_jwt.py
-          echo "        decoded = jwt.decode(token, options={'verify_signature': False})" >> decode_jwt.py
-          echo "        return decoded" >> decode_jwt.py
-          echo "    except Exception as e:" >> decode_jwt.py
-          echo "        print(f'Error decoding token: {e}')" >> decode_jwt.py
-          echo "        return None" >> decode_jwt.py
-          echo "" >> decode_jwt.py
-          echo "jwt_token = os.getenv('JWT_TOKEN')" >> decode_jwt.py
-          echo "print(f'JWT Token: {jwt_token}')" >> decode_jwt.py
-          echo "decoded_token = decode_jwt_token(jwt_token)" >> decode_jwt.py
-          echo "print(f'Decoded JWT Token: {decoded_token}')" >> decode_jwt.py
-          echo "print(f'TEAM_NAME: {os.getenv('TEAM_NAME')}')" >> decode_jwt.py
-          python decode_jwt.py
-
+          echo "import jwt" > customize_jwt.py
+          echo "import os" >> customize_jwt.py
+          echo "import json" >> customize_jwt.py
+          echo "def customize_jwt_token(token, team_name):" >> customize_jwt.py
+          echo "    try:" >> customize_jwt.py
+          echo "        decoded = jwt.decode(token, options={'verify_signature': False})" >> customize_jwt.py
+          echo "        decoded['team_name'] = team_name" >> customize_jwt.py
+          echo "        secret = 'your-256-bit-secret'" >> customize_jwt.py
+          echo "        customized_token = jwt.encode(decoded, secret, algorithm='HS256')" >> customize_jwt.py
+          echo "        return customized_token" >> customize_jwt.py
+          echo "    except Exception as e:" >> customize_jwt.py
+          echo "        print(f'Error customizing token: {e}')" >> customize_jwt.py
+          echo "        return None" >> customize_jwt.py
+          echo "" >> customize_jwt.py
+          echo "jwt_token = os.getenv('JWT_TOKEN')" >> customize_jwt.py
+          echo "team_name = os.getenv('TEAM_NAME')" >> customize_jwt.py
+          echo "customized_token = customize_jwt_token(jwt_token, team_name)" >> customize_jwt.py
+          echo "print(f'Customized JWT Token: {customized_token}')" >> customize_jwt.py
+          echo "echo 'CUSTOMIZED_JWT_TOKEN=$customized_token' >> $GITHUB_ENV" >> customize_jwt.py
+          python customize_jwt.py
 
       - name: Authenticate to Vault
         uses: hashicorp/vault-action@v2
         with:
           url: https://vault.mycompany.com:8200
-          token: ${{ steps.oidc.outputs.token }}
+          token: ${{ steps.customize_jwt.outputs.token }}
           secrets: |
             secret/data/ci/aws accessKey | AWS_ACCESS_KEY_ID ;
             secret/data/ci/aws secretKey | AWS_SECRET_ACCESS_KEY ;
