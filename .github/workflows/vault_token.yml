@@ -17,7 +17,7 @@ jobs:
           python-version: '3.x'
 
       - name: Install dependencies
-        run: | 
+        run: |
           python -m pip install --upgrade pip
           pip install pyjwt jq
 
@@ -44,6 +44,9 @@ jobs:
           echo "import os" >> decode_jwt.py
           echo "def decode_jwt_token(token, secret='your-256-bit-secret'):" >> decode_jwt.py
           echo "    try:" >> decode_jwt.py
+          echo "        print(f'Token: {token}')" >> decode_jwt.py
+          echo "        segments = token.split('.')" >> decode_jwt.py
+          echo "        print(f'Token Segments: {segments}')" >> decode_jwt.py
           echo "        decoded = jwt.decode(token.encode(), secret, algorithms=['HS256'])" >> decode_jwt.py
           echo "        return decoded" >> decode_jwt.py
           echo "    except Exception as e:" >> decode_jwt.py
