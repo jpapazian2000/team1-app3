@@ -43,7 +43,7 @@ jobs:
           echo "import os" >> decode_jwt.py
           echo "def decode_jwt_token(token, secret='your-256-bit-secret'):" >> decode_jwt.py
           echo "    try:" >> decode_jwt.py
-          echo "        decoded = jwt.decode(token, secret, algorithms=['HS256'])" >> decode_jwt.py
+          echo "        decoded = jwt.decode(token.encode(), secret, algorithms=['HS256'])" >> decode_jwt.py
           echo "        return decoded" >> decode_jwt.py
           echo "    except Exception as e:" >> decode_jwt.py
           echo "        print(f'Error decoding token: {e}')" >> decode_jwt.py
@@ -55,11 +55,11 @@ jobs:
           echo "print(f'TEAM_NAME: {os.getenv('TEAM_NAME')}')" >> decode_jwt.py
           python decode_jwt.py
 
-     # - name: Authenticate to Vault
-     #   uses: hashicorp/vault-action@v2
-     #   with:
-     #     url: https://vault.mycompany.com:8200
-     #     token: ${{ steps.oidc.outputs.token }}
-     #     secrets: |
-     #       secret/data/ci/aws accessKey | AWS_ACCESS_KEY_ID ;
-     #       secret/data/ci/aws secretKey | AWS_SECRET_ACCESS_KEY ;
+      - name: Authenticate to Vault
+        uses: hashicorp/vault-action@v2
+        with:
+          url: https://vault.mycompany.com:8200
+          token: ${{ steps.oidc.outputs.token }}
+          secrets: |
+            secret/data/ci/aws accessKey | AWS_ACCESS_KEY_ID ;
+            secret/data/ci/aws secretKey | AWS_SECRET_ACCESS_KEY ;
