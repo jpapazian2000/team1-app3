@@ -1,9 +1,10 @@
 name: CI
 
 on:
-  push:
-    branches:
-      - main
+  workflow_dispatch:
+  #push:
+  #  branches:
+  #    - main
 
 jobs:
   build:
@@ -48,6 +49,29 @@ jobs:
           echo "jwt_token = generate_jwt_token_with_claim('team', team_name)" >> generate_jwt.py
           echo "print(f'::set-output name=token::{jwt_token}')" >> generate_jwt.py
           python generate_jwt.py
+
+      - name: Decode JWT Token
+        run: |
+          echo "import jwt" > decode_jwt.py
+          echo "def decode_jwt_token(token, secret='your-256-bit-secret'):" >> decode_jwt.py
+          echo "    decoded = jwt.decode(token, secret, algorithms=['HS256'])" >> decode_jwt.py
+          echo "    return decoded" >> decode_jwt.py
+          echo "" >> decode_jwt.py
+          echo "jwt_token = '${{ steps.jwt.outputs.token }}'" >> decode_jwt.py
+          echo "decoded_token = decode_jwt_token(jwt_token)" >> decode_jwt.py
+          echo "print(f'Decoded JWT Token: {decoded_token}')" >> decode_jwt.py
+          python decode_jwt.py
+
+      #- name: Authenticate to Vault
+      #  uses: hashicorp/vault-action@v2
+      #  with:
+      #    url: https://vault.mycompany.com:8200
+      #    token: ${{ steps.jwt.outputs.token }}
+      #    secrets: |
+      #      secret/data/ci/aws accessKey | AWS_ACCESS_KEY_ID ;
+      #      secret/data/ci/aws secretKey | AWS_SECRET_ACCESS_KEY ;
+
+
 
       #- name: Authenticate to Vault
       #  uses: hashicorp/vault-action@v2
