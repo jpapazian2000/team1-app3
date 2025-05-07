@@ -19,7 +19,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install pyjwt
+          pip install pyjwt jq
 
       - name: Extract team name
         id: extract_team
@@ -34,26 +34,32 @@ jobs:
         run: |
           echo "Requesting OIDC token..."
           ID_TOKEN=$(curl -s -H "Authorization: Bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" -H "Accept: application/json" "$ACTIONS_ID_TOKEN_REQUEST_URL" | jq -r '.value')
+          echo "ID_TOKEN: $ID_TOKEN"
           echo "::set-output name=token::$ID_TOKEN"
 
       - name: Decode JWT Token
         run: |
           echo "import jwt" > decode_jwt.py
+          echo "import os" >> decode_jwt.py
           echo "def decode_jwt_token(token, secret='your-256-bit-secret'):" >> decode_jwt.py
-          echo "    decoded = jwt.decode(token, secret, algorithms=['HS256'])" >> decode_jwt.py
-          echo "    return decoded" >> decode_jwt.py
+          echo "    try:" >> decode_jwt.py
+          echo "        decoded = jwt.decode(token, secret, algorithms=['HS256'])" >> decode_jwt.py
+          echo "        return decoded" >> decode_jwt.py
+          echo "    except Exception as e:" >> decode_jwt.py
+          echo "        print(f'Error decoding token: {e}')" >> decode_jwt.py
+          echo "        return None" >> decode_jwt.py
           echo "" >> decode_jwt.py
-          echo "jwt_token = '${{ steps.oidc.outputs.token }}'" >> decode_jwt.py
+          echo "jwt_token = os.getenv('JWT_TOKEN')" >> decode_jwt.py
           echo "decoded_token = decode_jwt_token(jwt_token)" >> decode_jwt.py
           echo "print(f'Decoded JWT Token: {decoded_token}')" >> decode_jwt.py
-          echo "print(f'TEAM_NAME: ${TEAM_NAME}')" >> decode_jwt.py
+          echo "print(f'TEAM_NAME: {os.getenv('TEAM_NAME')}')" >> decode_jwt.py
           python decode_jwt.py
 
-  #    - name: Authenticate to Vault
-  #      uses: hashicorp/vault-action@v2
-  #      with:
-  #        url: https://vault.mycompany.com:8200
-  #        token: ${{ steps.oidc.outputs.token }}
-  #        secrets: |
-  #          secret/data/ci/aws accessKey | AWS_ACCESS_KEY_ID ;
-  #          secret/data/ci/aws secretKey | AWS_SECRET_ACCESS_KEY ;
+     # - name: Authenticate to Vault
+     #   uses: hashicorp/vault-action@v2
+     #   with:
+     #     url: https://vault.mycompany.com:8200
+     #     token: ${{ steps.oidc.outputs.token }}
+     #     secrets: |
+     #       secret/data/ci/aws accessKey | AWS_ACCESS_KEY_ID ;
+     #       secret/data/ci/aws secretKey | AWS_SECRET_ACCESS_KEY ;
