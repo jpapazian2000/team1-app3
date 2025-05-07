@@ -36,6 +36,7 @@ jobs:
           ID_TOKEN=$(curl -s -H "Authorization: Bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" -H "Accept: application/json" "$ACTIONS_ID_TOKEN_REQUEST_URL" | jq -r '.value')
           echo "ID_TOKEN: $ID_TOKEN"
           echo "::set-output name=token::$ID_TOKEN"
+          echo "JWT_TOKEN=$ID_TOKEN" >> $GITHUB_ENV
 
       - name: Decode JWT Token
         run: |
@@ -50,6 +51,7 @@ jobs:
           echo "        return None" >> decode_jwt.py
           echo "" >> decode_jwt.py
           echo "jwt_token = os.getenv('JWT_TOKEN')" >> decode_jwt.py
+          echo "print(f'JWT Token: {jwt_token}')" >> decode_jwt.py
           echo "decoded_token = decode_jwt_token(jwt_token)" >> decode_jwt.py
           echo "print(f'Decoded JWT Token: {decoded_token}')" >> decode_jwt.py
           echo "print(f'TEAM_NAME: {os.getenv('TEAM_NAME')}')" >> decode_jwt.py
