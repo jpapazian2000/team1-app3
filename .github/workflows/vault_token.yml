@@ -62,7 +62,8 @@ jobs:
           echo "team_name = os.getenv('TEAM_NAME')" >> customize_jwt.py
           echo "customized_token = customize_jwt_token(jwt_token, team_name)" >> customize_jwt.py
           echo "print(f'Customized JWT Token: {customized_token}')" >> customize_jwt.py
-          echo "echo 'CUSTOMIZED_JWT_TOKEN=$customized_token' >> $GITHUB_ENV" >> customize_jwt.py
+          echo "with open(os.getenv('GITHUB_ENV'), 'a') as env_file:" >> customize_jwt.py
+          echo "    env_file.write(f'CUSTOMIZED_JWT_TOKEN={customized_token}\\n')" >> customize_jwt.py
           python customize_jwt.py
 
       - name: Authenticate to Vault
