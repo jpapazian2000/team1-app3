@@ -3,6 +3,10 @@ name: authenticate to vault with custom claim
 on:
   workflow_dispatch:
 
+permissions:
+  id-token: write
+  contents: read
+
 jobs:
   build:
     runs-on: ubuntu-latest
