@@ -46,12 +46,12 @@ jobs:
         run: |
           echo "import jwt" > decode_jwt.py
           echo "import os" >> decode_jwt.py
-          echo "def decode_jwt_token(token, secret='your-256-bit-secret'):" >> decode_jwt.py
+          echo "def decode_jwt_token(token):" >> decode_jwt.py
           echo "    try:" >> decode_jwt.py
           echo "        print(f'Token: {token}')" >> decode_jwt.py
           echo "        segments = token.split('.')" >> decode_jwt.py
           echo "        print(f'Token Segments: {segments}')" >> decode_jwt.py
-          echo "        decoded = jwt.decode(token.encode(), secret, algorithms=['HS256'])" >> decode_jwt.py
+          echo "        decoded = jwt.decode(token, options={'verify_signature': False})" >> decode_jwt.py
           echo "        return decoded" >> decode_jwt.py
           echo "    except Exception as e:" >> decode_jwt.py
           echo "        print(f'Error decoding token: {e}')" >> decode_jwt.py
@@ -63,6 +63,7 @@ jobs:
           echo "print(f'Decoded JWT Token: {decoded_token}')" >> decode_jwt.py
           echo "print(f'TEAM_NAME: {os.getenv('TEAM_NAME')}')" >> decode_jwt.py
           python decode_jwt.py
+
 
       - name: Authenticate to Vault
         uses: hashicorp/vault-action@v2
